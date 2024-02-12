@@ -1,17 +1,19 @@
 import * as React from 'react';
-import { Button, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import products from '@assets/data/products';
 import { defaultImage } from '@/components/ProductListItem';
+import Button from '@/components/@common/Button';
 
-const size = ['S', 'M', 'L', 'XL'];
+const size = ['S', 'M', 'L', 'XL'] as const;
+type SizeType = (typeof size)[number];
 
 export default function ProductDetailScreen() {
   const navigation = useNavigation();
   const { id } = useLocalSearchParams();
   const product = products.find((product) => String(product.id) === id);
 
-  const [selectedSize, setSelectedSize] = React.useState<string | null>('M');
+  const [selectedSize, setSelectedSize] = React.useState<SizeType | null>('M');
 
   if (!product) {
     return (
@@ -29,7 +31,7 @@ export default function ProductDetailScreen() {
     console.warn('Add to cart');
   };
 
-  const onClickSize = (size: string) => {
+  const onClickSize = (size: SizeType) => {
     if (size === selectedSize) {
       return setSelectedSize(null);
     }
@@ -61,7 +63,7 @@ export default function ProductDetailScreen() {
       </View>
 
       <Text style={styles.price}>Price: ${product.price.toFixed(2)}</Text>
-      <Button onPress={addToCart} title="Add to cart" disabled={isButtonDisabled} />
+      <Button onPress={addToCart} text="Add to cart" disabled={isButtonDisabled} />
     </View>
   );
 }
