@@ -14,6 +14,12 @@ export default function CartProvider({ children }: React.PropsWithChildren) {
   const [items, setItems] = React.useState<CartItem[]>([]);
 
   const addItem = (product: Product, size: CartItem['size']) => {
+    const existingItem = items.find((item) => item.product && item.size === size);
+    if (existingItem) {
+      updateQuantity(existingItem.id, 1);
+      return;
+    }
+
     // todo 이미 cart에 있으면 quantity ++
     const newCartItem: CartItem = {
       id: randomUUID(),
