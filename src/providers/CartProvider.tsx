@@ -27,17 +27,24 @@ export default function CartProvider({ children }: React.PropsWithChildren) {
   };
 
   // todo update quantity
-  const updateQuantity = (itemId: string, amount: -1 | 1) => {
-    const updatedItems = items.map((item) =>
-      item.id !== itemId ? item : { ...item, quantity: item.quantity + amount }
-    );
-    setItems(updatedItems);
+  // const updateQuantity = (itemId: string, amount: -1 | 1) => {
+  //   const updatedItems = items.map((item) =>
+  //     item.id !== itemId ? item : { ...item, quantity: item.quantity + amount }
+  //   );
+  //   setItems(updatedItems);
 
-    const itemToRemove = updatedItems.find((item) => item.id === itemId);
-    if (itemToRemove && itemToRemove.quantity === 0) {
-      const remainingItems = updatedItems.filter((item) => item.id !== itemId);
-      setItems(remainingItems);
-    }
+  //   const itemToRemove = updatedItems.find((item) => item.id === itemId);
+  //   if (itemToRemove && itemToRemove.quantity === 0) {
+  //     const remainingItems = updatedItems.filter((item) => item.id !== itemId);
+  //     setItems(remainingItems);
+  //   }
+  // };
+  const updateQuantity = (itemId: string, amount: -1 | 1) => {
+    setItems((prevItems) =>
+      prevItems
+        .map((item) => (item.id !== itemId ? item : { ...item, quantity: item.quantity + amount }))
+        .filter((item) => item.quantity !== 0)
+    );
   };
 
   console.log(items);
