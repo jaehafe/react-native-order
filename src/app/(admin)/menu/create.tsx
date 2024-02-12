@@ -4,6 +4,7 @@ import Button from '@/components/@common/Button';
 import Colors from '@/constants/Colors';
 import { defaultImage } from '@/components/ProductListItem';
 import * as ImagePicker from 'expo-image-picker';
+import { Stack } from 'expo-router';
 
 export default function CreateProductScreen() {
   const [name, setName] = React.useState('');
@@ -46,9 +47,8 @@ export default function CreateProductScreen() {
   };
 
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, // 이미지만
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -63,6 +63,7 @@ export default function CreateProductScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ title: 'Create Product' }} />
       <Image source={{ uri: image || defaultImage }} style={styles.image} />
       <Text style={styles.textButton} onPress={pickImage}>
         Select Image
