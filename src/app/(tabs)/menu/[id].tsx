@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Stack, useLocalSearchParams, useNavigation } from 'expo-router';
+import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import products from '@assets/data/products';
 import { defaultImage } from '@/components/ProductListItem';
 import Button from '@/components/@common/Button';
+import { useCartContext } from '@/providers/CartProvider';
+import { PizzaSize } from '@/@types';
 
 const size = ['S', 'M', 'L', 'XL'] as const;
 type SizeType = (typeof size)[number];
@@ -13,6 +15,8 @@ export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
   const product = products.find((product) => String(product.id) === id);
 
+  const router = useRouter();
+  const { addItem } = useCartContext();
   const [selectedSize, setSelectedSize] = React.useState<SizeType | null>('M');
 
   if (!product) {
@@ -28,7 +32,11 @@ export default function ProductDetailScreen() {
 
   const addToCart = () => {
     if (!product) return;
-    console.warn('Add to cart');
+
+    if (selectedSize) {
+      addItem(product, selectedSize);
+    }
+    router.push('/cart');
   };
 
   const onClickSize = (size: SizeType) => {
