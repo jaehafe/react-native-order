@@ -4,7 +4,7 @@ import Colors from '@/constants/Colors';
 
 type ButtonProps = {
   text: string;
-  disabled: boolean;
+  disabled?: boolean;
 } & React.ComponentPropsWithoutRef<typeof Pressable>;
 
 const Button = React.forwardRef<View | null, ButtonProps>(({ text, disabled, ...pressableProps }, ref) => {
