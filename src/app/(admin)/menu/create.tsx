@@ -1,16 +1,19 @@
 import * as React from 'react';
-import { Image, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TextInput, View } from 'react-native';
 import Button from '@/components/@common/Button';
 import Colors from '@/constants/Colors';
 import { defaultImage } from '@/components/ProductListItem';
 import * as ImagePicker from 'expo-image-picker';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 
 export default function CreateProductScreen() {
   const [name, setName] = React.useState('');
   const [price, setPrice] = React.useState('');
   const [errors, setErrors] = React.useState('');
   const [image, setImage] = React.useState<string | null>(null);
+
+  const { id } = useLocalSearchParams();
+  const isUpdating = !!id;
 
   const resetFields = () => {
     setName('');
@@ -34,7 +37,28 @@ export default function CreateProductScreen() {
     return true;
   };
 
+  const onSubmit = () => {
+    if (isUpdating) {
+      // update
+      onUpdateCreate();
+    } else {
+      onCreate();
+    }
+  };
+
   const onCreate = () => {
+    if (!validateInput()) {
+      return;
+    }
+
+    console.warn('생성', name);
+
+    // todo db 저장
+
+    resetFields();
+  };
+
+  const onUpdateCreate = () => {
     if (!validateInput()) {
       return;
     }
@@ -61,9 +85,21 @@ export default function CreateProductScreen() {
     }
   };
 
+  const onDelete = () => {
+    console.warn('Delete!!');
+  };
+
+  const confirmDelete = () => {
+    Alert.alert('Confirm', 'Are you sure to delete this product?', [
+      { text: 'Cancel' },
+      { text: 'Delete', style: 'destructive', onPress: onDelete },
+    ]);
+  };
+
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Create Product' }} />
+      <Stack.Screen options={{ title: isUpdating ? 'Update Product' : 'Create Product' }} />
+
       <Image source={{ uri: image || defaultImage }} style={styles.image} />
       <Text style={styles.textButton} onPress={pickImage}>
         Select Image
@@ -75,7 +111,12 @@ export default function CreateProductScreen() {
       <TextInput value={price} onChangeText={setPrice} placeholder="9.99" style={styles.input} keyboardType="numeric" />
 
       <Text style={styles.errors}>{errors}</Text>
-      <Button onPress={onCreate} text="Create" />
+      <Button onPress={onSubmit} text={isUpdating ? 'Update' : 'Create'} />
+      {isUpdating && (
+        <Text onPress={confirmDelete} style={styles.textButton}>
+          Delete
+        </Text>
+      )}
     </View>
   );
 }
