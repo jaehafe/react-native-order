@@ -1,11 +1,9 @@
-import { Pressable, useColorScheme } from 'react-native';
+import { Pressable } from 'react-native';
 import { Link, Stack } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 
-export default function MenuLayout() {
-  const colorScheme = useColorScheme();
-
+export default function MenuStack() {
   return (
     <Stack
       screenOptions={{
