@@ -1,13 +1,24 @@
 import * as React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
 
 import { Link, Stack } from 'expo-router';
 import Button from '@/components/@common/Button';
 import Colors from '@/constants/Colors';
+import { supabase } from '@/lib/supabase';
 
-const SignInScreen = () => {
+export default function SignInScreen() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  const signInWithEmail = async () => {
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) Alert.alert(error.message);
+    setLoading(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -19,13 +30,13 @@ const SignInScreen = () => {
       <Text style={styles.label}>Password</Text>
       <TextInput value={password} onChangeText={setPassword} placeholder="" style={styles.input} secureTextEntry />
 
-      <Button text="Sign in" />
+      <Button onPress={signInWithEmail} disabled={loading} text={loading ? 'Signing in...' : 'Sign in'} />
       <Link href="/sign-up" style={styles.textButton}>
         Create an account
       </Link>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -52,5 +63,3 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 });
-
-export default SignInScreen;
