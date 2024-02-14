@@ -1,13 +1,19 @@
 import * as React from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import Colors from '@/constants/Colors';
+import { useAuthContext } from '@/providers/AuthProvider';
 
 function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string }) {
   return <FontAwesome size={20} style={{ marginBottom: -3 }} {...props} />;
 }
 
 export default function TabLayout() {
+  const { isAdmin } = useAuthContext();
+  if (!isAdmin) {
+    return <Redirect href={'/'} />;
+  }
+
   return (
     <Tabs
       screenOptions={{

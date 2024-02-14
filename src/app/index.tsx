@@ -6,13 +6,16 @@ import { useAuthContext } from '@/providers/AuthProvider';
 import { supabase } from '@/lib/supabase';
 
 export default function Index() {
-  const { session, loading } = useAuthContext();
+  const { session, loading, isAdmin } = useAuthContext();
 
   if (loading) {
     return <Text>loading...</Text>;
   }
   if (!session) {
     return <Redirect href={'/sign-in'} />;
+  }
+  if (!isAdmin) {
+    return <Redirect href={'/(user)'} />;
   }
 
   return (
@@ -23,10 +26,6 @@ export default function Index() {
 
       <Link href={'/(admin)'} asChild>
         <Button text="Admin" />
-      </Link>
-
-      <Link href={'/sign-in'} asChild>
-        <Button text="Sign in" />
       </Link>
 
       <Button onPress={() => supabase.auth.signOut()} text="Sign out" />
