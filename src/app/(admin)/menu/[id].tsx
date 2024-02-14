@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Link, Stack, useLocalSearchParams, useNavigation } from 'expo-router';
-import products from '@assets/data/products';
 import { defaultImage } from '@/components/ProductListItem';
 import { FontAwesome } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
+import { useProduct } from '@/api/products';
 
 const size = ['S', 'M', 'L', 'XL'] as const;
 type SizeType = (typeof size)[number];
@@ -12,7 +12,16 @@ type SizeType = (typeof size)[number];
 export default function ProductDetailScreen() {
   const navigation = useNavigation();
   const { id } = useLocalSearchParams();
-  const product = products.find((product) => String(product.id) === id);
+  // const product = products.find((product) => String(product.id) === id);
+
+  const { data: product, isLoading, error } = useProduct(parseInt(typeof id === 'string' ? id : id[0]));
+
+  if (isLoading) {
+    return <ActivityIndicator />;
+  }
+  if (error || !product) {
+    return <Text>Failed to fetch product</Text>;
+  }
 
   if (!product) {
     return (

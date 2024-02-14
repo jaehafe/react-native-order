@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { FlatList, View } from 'react-native';
-import products from '@assets/data/products';
 import ProductListItem from '@/components/ProductListItem';
+import { useProductList } from '@/api/products';
 
 export default function MenuScreen() {
+  const { data: products, isLoading, error } = useProductList();
+
   return (
     <View>
       <FlatList
