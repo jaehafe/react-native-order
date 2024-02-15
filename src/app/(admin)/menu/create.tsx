@@ -4,13 +4,17 @@ import Button from '@/components/@common/Button';
 import Colors from '@/constants/Colors';
 import { defaultImage } from '@/components/ProductListItem';
 import * as ImagePicker from 'expo-image-picker';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useInsertProduct } from '@/api/products';
 
 export default function CreateProductScreen() {
+  const router = useRouter();
   const [name, setName] = React.useState('');
   const [price, setPrice] = React.useState('');
   const [errors, setErrors] = React.useState('');
   const [image, setImage] = React.useState<string | null>(null);
+
+  const { mutate: insertProduct } = useInsertProduct();
 
   const { id } = useLocalSearchParams();
   const isUpdating = !!id;
@@ -46,16 +50,19 @@ export default function CreateProductScreen() {
     }
   };
 
-  const onCreate = () => {
+  const onCreate = async () => {
     if (!validateInput()) {
       return;
     }
-
-    console.warn('생성', name);
-
-    // todo db 저장
-
-    resetFields();
+    insertProduct(
+      { name, price: Number(price), image },
+      {
+        onSuccess: () => {
+          resetFields();
+          router.back();
+        },
+      }
+    );
   };
 
   const onUpdateCreate = () => {
