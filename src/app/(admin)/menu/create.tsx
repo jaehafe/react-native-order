@@ -5,7 +5,7 @@ import Colors from '@/constants/Colors';
 import { defaultImage } from '@/components/ProductListItem';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useInsertProduct } from '@/api/products';
+import { useDeleteProduct, useInsertProduct, useProduct, useUpdateProduct } from '@/api/products';
 
 export default function CreateProductScreen() {
   const router = useRouter();
@@ -14,10 +14,20 @@ export default function CreateProductScreen() {
   const [errors, setErrors] = React.useState('');
   const [image, setImage] = React.useState<string | null>(null);
 
-  const { mutate: insertProduct } = useInsertProduct();
-
   const { id } = useLocalSearchParams();
   const isUpdating = !!id;
+  const { mutate: insertProduct } = useInsertProduct();
+  const { mutate: updateProduct } = useUpdateProduct();
+  const { data: updatingProduct } = useProduct(Number(id));
+  const { mutate: deleteProduct } = useDeleteProduct();
+
+  React.useEffect(() => {
+    if (updatingProduct) {
+      setName(updatingProduct.name);
+      setPrice(String(updatingProduct.price));
+      setImage(updatingProduct.image);
+    }
+  }, [updatingProduct]);
 
   const resetFields = () => {
     setName('');
@@ -44,7 +54,7 @@ export default function CreateProductScreen() {
   const onSubmit = () => {
     if (isUpdating) {
       // update
-      onUpdateCreate();
+      onUpdate();
     } else {
       onCreate();
     }
@@ -65,16 +75,20 @@ export default function CreateProductScreen() {
     );
   };
 
-  const onUpdateCreate = () => {
+  const onUpdate = () => {
     if (!validateInput()) {
       return;
     }
 
-    console.warn('생성', name);
-
-    // todo db 저장
-
-    resetFields();
+    updateProduct(
+      { name, image, price: Number(price), id: Number(id) },
+      {
+        onSuccess() {
+          resetFields();
+          router.back();
+        },
+      }
+    );
   };
 
   const pickImage = async () => {
@@ -93,7 +107,12 @@ export default function CreateProductScreen() {
   };
 
   const onDelete = () => {
-    console.warn('Delete!!');
+    deleteProduct(Number(id), {
+      onSuccess: () => {
+        resetFields();
+        router.replace('/(admin)');
+      },
+    });
   };
 
   const confirmDelete = () => {
