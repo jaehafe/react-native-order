@@ -1,10 +1,11 @@
 import * as React from 'react';
-import { CartItem, Product } from '@/@types';
+import { CartItem } from '@/@types';
 import { randomUUID } from 'expo-crypto';
+import { Tables } from '@/database.types';
 
 export interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, size: CartItem['size']) => void;
+  addItem: (product: Tables<'products'>, size: CartItem['size']) => void;
   updateQuantity: (itemId: string, amount: -1 | 1) => void;
   total: number;
 }
@@ -14,7 +15,7 @@ const CartContext = React.createContext<CartContextType | null>(null);
 export default function CartProvider({ children }: React.PropsWithChildren) {
   const [items, setItems] = React.useState<CartItem[]>([]);
 
-  const addItem = (product: Product, size: CartItem['size']) => {
+  const addItem = (product: Tables<'products'>, size: CartItem['size']) => {
     const existingItem = items.find((item) => item.product && item.size === size);
     if (existingItem) {
       updateQuantity(existingItem.id, 1);

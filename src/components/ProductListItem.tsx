@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { Image, Pressable, StyleSheet, Text } from 'react-native';
 import Colors from '@/constants/Colors';
-import { Product } from '@/@types';
 import { Link, useSegments } from 'expo-router';
+import { Tables } from '@/database.types';
 
 export const defaultImage = 'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/default.png';
 
 interface ProductListItemProps {
-  product: Product;
+  product: Tables<'products'>;
 }
 
 export default function ProductListItem({ product }: ProductListItemProps) {
@@ -16,6 +16,7 @@ export default function ProductListItem({ product }: ProductListItemProps) {
   const segment = segments[0] ? segments[0] : 'user';
 
   return (
+    // TODO
     <Link href={`/${segment}/menu/${product.id}`} asChild>
       <Pressable style={styles.container}>
         <Image source={{ uri: product.image || defaultImage }} style={styles.image} resizeMode="contain" />
