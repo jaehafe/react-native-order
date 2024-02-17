@@ -3,10 +3,12 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import OrderListItem from '@/components/OrderListItem';
 import OrderItemListItem from '@/components/OrderItemListItem';
 import { useOrderDetails } from '@/api/orders';
+import { useUpdateOrderSubscription } from '@/api/orders/subscriptions';
 
 export default function OrderDetailsScreen() {
   const { id } = useLocalSearchParams();
   const { data: order, isLoading, error } = useOrderDetails(Number(id));
+  useUpdateOrderSubscription(Number(id));
 
   if (isLoading) {
     return <ActivityIndicator />;
