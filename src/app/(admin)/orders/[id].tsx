@@ -2,13 +2,20 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from '
 import { Stack, useLocalSearchParams } from 'expo-router';
 import OrderListItem from '@/components/OrderListItem';
 import OrderItemListItem from '@/components/OrderItemListItem';
-import { OrderStatusList } from '@/@types';
+import { OrderStatus, OrderStatusList } from '@/@types';
 import Colors from '@/constants/Colors';
-import { useOrderDetails } from '@/api/orders';
+import { useOrderDetails, useUpdateOrder } from '@/api/orders';
 
 export default function OrderDetailsScreen() {
-  const { id } = useLocalSearchParams();
-  const { data: order, isLoading, error } = useOrderDetails(Number(id));
+  const { id: idString } = useLocalSearchParams();
+  const id = parseFloat(typeof idString === 'string' ? idString : idString[0]);
+
+  const { data: order, isLoading, error } = useOrderDetails(id);
+  const { mutate: updateOrder } = useUpdateOrder();
+
+  const updateStatus = (status: OrderStatus) => {
+    updateOrder({ id, updatedFields: { status } });
+  };
 
   if (isLoading) {
     return <ActivityIndicator />;
@@ -24,7 +31,6 @@ export default function OrderDetailsScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: `Order #${order.id}` }} />
-      <OrderListItem order={order} />
 
       <FlatList
         data={order.order_items}
@@ -39,7 +45,7 @@ export default function OrderDetailsScreen() {
                 {OrderStatusList.map((status) => (
                   <Pressable
                     key={status}
-                    onPress={() => console.warn('Update status')}
+                    onPress={() => updateStatus(status)}
                     style={{
                       borderColor: Colors.light.tint,
                       borderWidth: 1,

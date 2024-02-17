@@ -1,9 +1,9 @@
 import { ActivityIndicator, FlatList, Text } from 'react-native';
-import OrderItemListItem from '@/components/OrderListItem';
 import { useAdminOrderList } from '@/api/orders';
+import OrderListItem from '@/components/OrderListItem';
 
 export default function OrdersScreen() {
-  const { data: orders, isLoading, error } = useAdminOrderList({ archived: true });
+  const { data: orders, isLoading, error } = useAdminOrderList({ archived: false });
 
   if (isLoading) {
     return <ActivityIndicator />;
@@ -13,11 +13,10 @@ export default function OrdersScreen() {
   }
 
   return (
-    // TODO
     <FlatList
       data={orders}
       renderItem={({ item }) => {
-        return <OrderItemListItem order={item} />;
+        return <OrderListItem order={item} />;
       }}
       contentContainerStyle={{ gap: 10, padding: 10 }}
     />

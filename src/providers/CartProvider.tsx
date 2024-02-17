@@ -27,29 +27,30 @@ export default function CartProvider({ children }: React.PropsWithChildren) {
   const { mutate: insertOrderItems } = useInsertOrderItems();
 
   const addItem = (product: Tables<'products'>, size: CartItem['size']) => {
-    const existingItem = items.find((item) => item.product && item.size === size);
+    // if already in cart, increment quantity
+    const existingItem = items.find((item) => item.product === product && item.size === size);
+
     if (existingItem) {
       updateQuantity(existingItem.id, 1);
       return;
     }
 
-    // todo 이미 cart에 있으면 quantity ++
     const newCartItem: CartItem = {
-      id: randomUUID(),
+      id: randomUUID(), // generate
       product,
       product_id: product.id,
       size,
       quantity: 1,
     };
 
-    setItems((prev) => [...prev, newCartItem]);
+    setItems([newCartItem, ...items]);
   };
 
   const updateQuantity = (itemId: string, amount: -1 | 1) => {
     setItems((prevItems) =>
       prevItems
         .map((item) => (item.id !== itemId ? item : { ...item, quantity: item.quantity + amount }))
-        .filter((item) => item.quantity !== 0)
+        .filter((item) => item.quantity > 0)
     );
   };
 
