@@ -159,7 +159,8 @@ export default function CreateProductScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: isUpdating ? 'Update Product' : 'Create Product' }} />
-      <RemoteImage fallback={defaultImage} path={image || defaultImage} style={styles.image} resizeMode="contain" />
+      <Image source={{ uri: image || defaultImage }} style={styles.image} />
+      {/* <RemoteImage fallback={defaultImage} path={image || defaultImage} style={styles.image} resizeMode="contain" /> */}
       <Text onPress={pickImage} style={styles.textButton}>
         Select Image
       </Text>
