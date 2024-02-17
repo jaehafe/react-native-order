@@ -11,6 +11,7 @@ import { randomUUID } from 'expo-crypto';
 import { supabase } from '@/lib/supabase';
 import { decode } from 'base64-arraybuffer';
 import { Product } from '@/@types';
+import RemoteImage from '@/components/RemoteImage';
 
 export default function CreateProductScreen() {
   const [name, setName] = React.useState('');
@@ -90,7 +91,6 @@ export default function CreateProductScreen() {
     }
 
     const imagePath = await uploadImage();
-
     updateProduct(
       { id, name, price: Number(price), image: imagePath! },
       {
@@ -159,8 +159,7 @@ export default function CreateProductScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: isUpdating ? 'Update Product' : 'Create Product' }} />
-
-      <Image source={{ uri: image || defaultImage }} style={styles.image} />
+      <RemoteImage fallback={defaultImage} path={image || defaultImage} style={styles.image} resizeMode="contain" />
       <Text onPress={pickImage} style={styles.textButton}>
         Select Image
       </Text>
