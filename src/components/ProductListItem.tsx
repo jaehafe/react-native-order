@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { Image, Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import Colors from '@/constants/Colors';
 import { Link, useSegments } from 'expo-router';
 import { Tables } from '@/database.types';
+import RemoteImage from './RemoteImage';
 
 export const defaultImage = 'https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/default.png';
 
@@ -19,7 +20,7 @@ export default function ProductListItem({ product }: ProductListItemProps) {
     // TODO
     <Link href={`/${segment}/menu/${product.id}` as any} asChild>
       <Pressable style={styles.container}>
-        <Image source={{ uri: product.image || defaultImage }} style={styles.image} resizeMode="contain" />
+        <RemoteImage fallback={defaultImage} path={product.image || null} style={styles.image} resizeMode="contain" />
         <Text style={styles.title}>{product.name}</Text>
         <Text style={styles.price}>${product.price}</Text>
       </Pressable>

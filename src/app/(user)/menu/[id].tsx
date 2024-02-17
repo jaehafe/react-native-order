@@ -5,6 +5,7 @@ import { defaultImage } from '@/components/ProductListItem';
 import Button from '@/components/@common/Button';
 import { useCartContext } from '@/providers/CartProvider';
 import { useProduct } from '@/api/products';
+import RemoteImage from '@/components/RemoteImage';
 
 const size = ['S', 'M', 'L', 'XL'] as const;
 type SizeType = (typeof size)[number];
@@ -12,7 +13,6 @@ type SizeType = (typeof size)[number];
 export default function ProductDetailScreen() {
   const navigation = useNavigation();
   const { id } = useLocalSearchParams();
-  // const product = products.find((product) => String(product.id) === id);
 
   const router = useRouter();
   const { addItem } = useCartContext();
@@ -59,7 +59,9 @@ export default function ProductDetailScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: product?.name }} />
-      <Image source={{ uri: product.image || defaultImage }} style={styles.image} />
+
+      <RemoteImage fallback={defaultImage} path={product.image || null} style={styles.image} resizeMode="contain" />
+
       <Text>Select size</Text>
       <View style={styles.sizes}>
         {size.map((size) => (

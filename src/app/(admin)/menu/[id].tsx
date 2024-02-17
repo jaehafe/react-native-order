@@ -5,6 +5,7 @@ import { defaultImage } from '@/components/ProductListItem';
 import { FontAwesome } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 import { useProduct } from '@/api/products';
+import RemoteImage from '@/components/RemoteImage';
 
 const size = ['S', 'M', 'L', 'XL'] as const;
 type SizeType = (typeof size)[number];
@@ -57,7 +58,7 @@ export default function ProductDetailScreen() {
       />
 
       <Stack.Screen options={{ title: product?.name }} />
-      <Image source={{ uri: product.image || defaultImage }} style={styles.image} />
+      <RemoteImage fallback={defaultImage} path={product.image || null} style={styles.image} resizeMode="contain" />
 
       <Text style={styles.title}>Title: {product.name}</Text>
       <Text style={styles.price}>Price: ${product.price.toFixed(2)}</Text>

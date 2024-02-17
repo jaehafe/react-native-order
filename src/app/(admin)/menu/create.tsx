@@ -6,25 +6,33 @@ import { defaultImage } from '@/components/ProductListItem';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useDeleteProduct, useInsertProduct, useProduct, useUpdateProduct } from '@/api/products';
+import * as FileSystem from 'expo-file-system';
+import { randomUUID } from 'expo-crypto';
+import { supabase } from '@/lib/supabase';
+import { decode } from 'base64-arraybuffer';
+import { Product } from '@/@types';
 
 export default function CreateProductScreen() {
-  const router = useRouter();
   const [name, setName] = React.useState('');
   const [price, setPrice] = React.useState('');
   const [errors, setErrors] = React.useState('');
   const [image, setImage] = React.useState<string | null>(null);
 
-  const { id } = useLocalSearchParams();
-  const isUpdating = !!id;
+  const { id: idString } = useLocalSearchParams();
+  const id = parseFloat(typeof idString === 'string' ? idString : idString?.[0]);
+  const isUpdating = !!idString;
+
   const { mutate: insertProduct } = useInsertProduct();
   const { mutate: updateProduct } = useUpdateProduct();
-  const { data: updatingProduct } = useProduct(Number(id));
+  const { data: updatingProduct } = useProduct(id);
   const { mutate: deleteProduct } = useDeleteProduct();
+
+  const router = useRouter();
 
   React.useEffect(() => {
     if (updatingProduct) {
       setName(updatingProduct.name);
-      setPrice(String(updatingProduct.price));
+      setPrice(updatingProduct.price.toString());
       setImage(updatingProduct.image);
     }
   }, [updatingProduct]);
@@ -44,7 +52,7 @@ export default function CreateProductScreen() {
       setErrors('Price is required');
       return false;
     }
-    if (isNaN(Number(price))) {
+    if (isNaN(parseFloat(price))) {
       setErrors('Price is not a number');
       return false;
     }
@@ -64,8 +72,9 @@ export default function CreateProductScreen() {
     if (!validateInput()) {
       return;
     }
+    const imagePath = await uploadImage();
     insertProduct(
-      { name, price: Number(price), image },
+      { name, price: Number(price), image: imagePath! },
       {
         onSuccess: () => {
           resetFields();
@@ -75,15 +84,17 @@ export default function CreateProductScreen() {
     );
   };
 
-  const onUpdate = () => {
+  const onUpdate = async () => {
     if (!validateInput()) {
       return;
     }
 
+    const imagePath = await uploadImage();
+
     updateProduct(
-      { name, image, price: Number(price), id: Number(id) },
+      { id, name, price: Number(price), image: imagePath! },
       {
-        onSuccess() {
+        onSuccess: () => {
           resetFields();
           router.back();
         },
@@ -93,13 +104,11 @@ export default function CreateProductScreen() {
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images, // 이미지만
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
-
-    console.log(result);
 
     if (!result.canceled) {
       setImage(result.assets[0].uri);
@@ -107,7 +116,7 @@ export default function CreateProductScreen() {
   };
 
   const onDelete = () => {
-    deleteProduct(Number(id), {
+    deleteProduct(id, {
       onSuccess: () => {
         resetFields();
         router.replace('/(admin)');
@@ -116,10 +125,35 @@ export default function CreateProductScreen() {
   };
 
   const confirmDelete = () => {
-    Alert.alert('Confirm', 'Are you sure to delete this product?', [
-      { text: 'Cancel' },
-      { text: 'Delete', style: 'destructive', onPress: onDelete },
+    Alert.alert('Confirm', 'Are you sure you want to delete this product', [
+      {
+        text: 'Cancel',
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: onDelete,
+      },
     ]);
+  };
+
+  const uploadImage = async () => {
+    if (!image?.startsWith('file://')) {
+      return;
+    }
+
+    const base64 = await FileSystem.readAsStringAsync(image, {
+      encoding: 'base64',
+    });
+    const filePath = `${randomUUID()}.png`;
+    const contentType = 'image/png';
+    const { data, error } = await supabase.storage
+      .from('product-images')
+      .upload(filePath, decode(base64), { contentType });
+
+    if (data) {
+      return data.path;
+    }
   };
 
   return (
@@ -127,16 +161,17 @@ export default function CreateProductScreen() {
       <Stack.Screen options={{ title: isUpdating ? 'Update Product' : 'Create Product' }} />
 
       <Image source={{ uri: image || defaultImage }} style={styles.image} />
-      <Text style={styles.textButton} onPress={pickImage}>
+      <Text onPress={pickImage} style={styles.textButton}>
         Select Image
       </Text>
+
       <Text style={styles.label}>Name</Text>
       <TextInput value={name} onChangeText={setName} placeholder="Name" style={styles.input} />
 
       <Text style={styles.label}>Price ($)</Text>
       <TextInput value={price} onChangeText={setPrice} placeholder="9.99" style={styles.input} keyboardType="numeric" />
 
-      <Text style={styles.errors}>{errors}</Text>
+      <Text style={{ color: 'red' }}>{errors}</Text>
       <Button onPress={onSubmit} text={isUpdating ? 'Update' : 'Create'} />
       {isUpdating && (
         <Text onPress={confirmDelete} style={styles.textButton}>
