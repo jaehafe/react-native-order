@@ -17,7 +17,7 @@ export default function ProductListItem({ product }: ProductListItemProps) {
 
   return (
     // TODO
-    <Link href={`/${segment}/menu/${product.id}`} asChild>
+    <Link href={`/${segment}/menu/${product.id}` as any} asChild>
       <Pressable style={styles.container}>
         <Image source={{ uri: product.image || defaultImage }} style={styles.image} resizeMode="contain" />
         <Text style={styles.title}>{product.name}</Text>

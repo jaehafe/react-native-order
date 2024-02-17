@@ -19,10 +19,6 @@ export default function OrderDetailsScreen() {
     return <Text>Order not found!</Text>;
   }
 
-  if (!order) {
-    return <Text>Order not found!</Text>;
-  }
-
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: `Order #${order.id}` }} />

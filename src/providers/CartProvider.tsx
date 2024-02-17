@@ -2,18 +2,27 @@ import * as React from 'react';
 import { CartItem } from '@/@types';
 import { randomUUID } from 'expo-crypto';
 import { Tables } from '@/database.types';
+import { useInsertOrder } from '@/api/orders';
+import { useAuthContext } from './AuthProvider';
+import { useRouter } from 'expo-router';
+import { InsertTables } from '@/@types';
+import { Alert } from 'react-native';
 
 export interface CartContextType {
   items: CartItem[];
   addItem: (product: Tables<'products'>, size: CartItem['size']) => void;
   updateQuantity: (itemId: string, amount: -1 | 1) => void;
   total: number;
+  checkout: VoidFunction;
 }
 
 const CartContext = React.createContext<CartContextType | null>(null);
 
 export default function CartProvider({ children }: React.PropsWithChildren) {
+  const router = useRouter();
+  const { session } = useAuthContext();
   const [items, setItems] = React.useState<CartItem[]>([]);
+  const { mutate: insertOrder } = useInsertOrder();
 
   const addItem = (product: Tables<'products'>, size: CartItem['size']) => {
     const existingItem = items.find((item) => item.product && item.size === size);
@@ -34,19 +43,6 @@ export default function CartProvider({ children }: React.PropsWithChildren) {
     setItems((prev) => [...prev, newCartItem]);
   };
 
-  // todo update quantity
-  // const updateQuantity = (itemId: string, amount: -1 | 1) => {
-  //   const updatedItems = items.map((item) =>
-  //     item.id !== itemId ? item : { ...item, quantity: item.quantity + amount }
-  //   );
-  //   setItems(updatedItems);
-
-  //   const itemToRemove = updatedItems.find((item) => item.id === itemId);
-  //   if (itemToRemove && itemToRemove.quantity === 0) {
-  //     const remainingItems = updatedItems.filter((item) => item.id !== itemId);
-  //     setItems(remainingItems);
-  //   }
-  // };
   const updateQuantity = (itemId: string, amount: -1 | 1) => {
     setItems((prevItems) =>
       prevItems
@@ -57,11 +53,32 @@ export default function CartProvider({ children }: React.PropsWithChildren) {
 
   const total = items.reduce((sum, item) => (sum += item.product.price * item.quantity), 0);
 
+  const clearCart = () => {
+    setItems([]);
+  };
+
+  const checkout = () => {
+    if (total === 0 || items.length < 1) {
+      Alert.alert('nothing to checkout');
+      return;
+    }
+    insertOrder(
+      { total, user_id: session?.user.id! },
+      {
+        onSuccess(data: InsertTables<'orders'>) {
+          clearCart();
+          router.push(`/(user)/orders/${data.id}`);
+        },
+      }
+    );
+  };
+
   const cartValue = {
     items,
     addItem,
     updateQuantity,
     total,
+    checkout,
   };
 
   return <CartContext.Provider value={cartValue}>{children}</CartContext.Provider>;
