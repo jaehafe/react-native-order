@@ -5,8 +5,8 @@ import { Tables } from '@/database.types';
 import { useInsertOrder } from '@/api/orders';
 import { useAuthContext } from './AuthProvider';
 import { useRouter } from 'expo-router';
-import { InsertTables } from '@/@types';
 import { Alert } from 'react-native';
+import { useInsertOrderItems } from '@/api/order-items';
 
 export interface CartContextType {
   items: CartItem[];
@@ -22,7 +22,9 @@ export default function CartProvider({ children }: React.PropsWithChildren) {
   const router = useRouter();
   const { session } = useAuthContext();
   const [items, setItems] = React.useState<CartItem[]>([]);
+
   const { mutate: insertOrder } = useInsertOrder();
+  const { mutate: insertOrderItems } = useInsertOrderItems();
 
   const addItem = (product: Tables<'products'>, size: CartItem['size']) => {
     const existingItem = items.find((item) => item.product && item.size === size);
@@ -65,12 +67,25 @@ export default function CartProvider({ children }: React.PropsWithChildren) {
     insertOrder(
       { total, user_id: session?.user.id! },
       {
-        onSuccess(data: InsertTables<'orders'>) {
-          clearCart();
-          router.push(`/(user)/orders/${data.id}`);
-        },
+        onSuccess: saveOrderItems,
       }
     );
+  };
+
+  const saveOrderItems = (order: Tables<'orders'>) => {
+    const orderItems = items.map((cartIem) => ({
+      order_id: order.id,
+      product_id: cartIem.product_id,
+      quantity: cartIem.quantity,
+      size: cartIem.size,
+    }));
+
+    insertOrderItems(orderItems, {
+      onSuccess() {
+        clearCart();
+        router.push(`/(user)/orders/${order.id}`);
+      },
+    });
   };
 
   const cartValue = {
